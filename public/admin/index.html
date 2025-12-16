@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Farouj Al-Mustafa</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Login Form */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 10px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .login-box button:hover {
+            background: #d35400;
+        }
+
+        .error-msg {
+            color: red;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        /* Dashboard */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            background: #eee;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .nav-tab.active {
+            background: #e67e22;
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .edit-btn {
+            background-color: #3498db;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+
+        .form-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .form-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN SECTION -->
+    <div id="loginSection" class="login-wrapper" style="display: none;">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <div id="loginError" class="error-msg">Invalid credentials</div>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DASHBOARD SECTION -->
+    <div id="dashboardSection" class="admin-container" style="display: none;">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <button onclick="logout()"
+                style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Logout</button>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('categories')">Categories</div>
+            <div class="nav-tab" onclick="switchTab('items')">Items</div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div id="categoriesTab" class="content-section active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <h2>Categories</h2>
+                <button onclick="openCategoryModal()"
+                    style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">+
+                    Add Category</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Slug</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="categoriesTableBody">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Items Tab -->
+        <div id="itemsTab" class="content-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <h2>Items</h2>
+                <button onclick="openItemModal()"
+                    style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">+
+                    Add Item</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name (EN)</th>
+                        <th>Name (AR)</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="categoryModal" class="form-modal">
+        <div class="form-content">
+            <h2 id="catModalTitle">Add Category</h2>
+            <form id="categoryForm">
+                <input type="hidden" id="catId">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="catName" required>
+                </div>
+                <div class="form-group">
+                    <label>Slug (Unique ID)</label>
+                    <input type="text" id="catSlug" required>
+                </div>
+                <div class="form-footer">
+                    <button type="button" onclick="closeModals()"
+                        style="padding: 8px 16px; border: 1px solid #ddd; background: white; cursor: pointer;">Cancel</button>
+                    <button type="submit"
+                        style="padding: 8px 16px; background: #e67e22; color: white; border: none; cursor: pointer;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Item Modal -->
+    <div id="itemModal" class="form-modal">
+        <div class="form-content">
+            <h2 id="itemModalTitle">Add Item</h2>
+            <form id="itemForm">
+                <input type="hidden" id="itemId">
+                <div class="form-group">
+                    <label>Name (English)</label>
+                    <input type="text" id="itemNameEn" required>
+                </div>
+                <div class="form-group">
+                    <label>Name (Arabic)</label>
+                    <input type="text" id="itemNameAr" required>
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="text" id="itemPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="itemCategory" required>
+                        <!-- Dynamic Options -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Featured</label>
+                    <input type="checkbox" id="itemFeatured"> Show as Featured?
+                </div>
+                <div class="form-footer">
+                    <button type="button" onclick="closeModals()"
+                        style="padding: 8px 16px; border: 1px solid #ddd; background: white; cursor: pointer;">Cancel</button>
+                    <button type="submit"
+                        style="padding: 8px 16px; background: #e67e22; color: white; border: none; cursor: pointer;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let categories = [];
+        let items = [];
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', checkAuth);
+
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/check-auth');
+                const data = await res.json();
+                if (data.authenticated) {
+                    showDashboard();
+                } else {
+                    showLogin();
+                }
+            } catch (err) {
+                console.error(err);
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('dashboardSection').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            loadData();
+        }
+
+        // Login Logic
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (res.ok) {
+                    showDashboard();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Login failed');
+            }
+        });
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.reload();
+        }
+
+        // Dashboard Logic
+        async function loadData() {
+            const res = await fetch('/api/menu');
+            const data = await res.json();
+            categories = data; // API returns categories with included items
+
+            // Flatten items for table
+            items = [];
+            categories.forEach(cat => {
+                cat.Items.forEach(item => {
+                    items.push({ ...item, categoryName: cat.name, CategoryId: cat.id });
+                });
+            });
+
+            renderCategories();
+            renderItems();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+
+            if (tab === 'categories') {
+                document.querySelector('.nav-tabs .nav-tab:nth-child(1)').classList.add('active');
+                document.getElementById('categoriesTab').classList.add('active');
+            } else {
+                document.querySelector('.nav-tabs .nav-tab:nth-child(2)').classList.add('active');
+                document.getElementById('itemsTab').classList.add('active');
+            }
+        }
+
+        // CATEGORIES
+        function renderCategories() {
+            const tbody = document.getElementById('categoriesTableBody');
+            tbody.innerHTML = categories.map(cat => `
+                <tr>
+                    <td>${cat.id}</td>
+                    <td>${cat.name}</td>
+                    <td>${cat.slug}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete-btn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Update item form category select
+            const select = document.getElementById('itemCategory');
+            select.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+        }
+
+        function openCategoryModal() {
+            document.getElementById('catModalTitle').textContent = 'Add Category';
+            document.getElementById('catId').value = '';
+            document.getElementById('catName').value = '';
+            document.getElementById('catSlug').value = '';
+            document.getElementById('categoryModal').style.display = 'flex';
+        }
+
+        function editCategory(id) {
+            const cat = categories.find(c => c.id === id);
+            document.getElementById('catModalTitle').textContent = 'Edit Category';
+            document.getElementById('catId').value = cat.id;
+            document.getElementById('catName').value = cat.name;
+            document.getElementById('catSlug').value = cat.slug;
+            document.getElementById('categoryModal').style.display = 'flex';
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('catId').value;
+            const data = {
+                name: document.getElementById('catName').value,
+                slug: document.getElementById('catSlug').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/categories/${id}` : '/api/categories';
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            closeModals();
+            loadData();
+        });
+
+        async function deleteCategory(id) {
+            if (confirm('Are you sure? This will delete all items in this category.')) {
+                await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                loadData();
+            }
+        }
+
+        // ITEMS
+        function renderItems() {
+            const tbody = document.getElementById('itemsTableBody');
+            tbody.innerHTML = items.map(item => `
+                <tr>
+                    <td>${item.name_en}</td>
+                    <td>${item.name_ar}</td>
+                    <td>${item.price}</td>
+                    <td>${item.categoryName}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editItem(${item.id})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete-btn" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openItemModal() {
+            document.getElementById('itemModalTitle').textContent = 'Add Item';
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemNameEn').value = '';
+            document.getElementById('itemNameAr').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemFeatured').checked = false;
+            if (categories.length > 0) document.getElementById('itemCategory').value = categories[0].id;
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        function editItem(id) {
+            const item = items.find(i => i.id === id);
+            document.getElementById('itemModalTitle').textContent = 'Edit Item';
+            document.getElementById('itemId').value = item.id;
+            document.getElementById('itemNameEn').value = item.name_en;
+            document.getElementById('itemNameAr').value = item.name_ar;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemCategory').value = item.CategoryId; // Use ID from flatten logic if available, wait, API returns items nested.
+            // I need to ensure CategoryId is available or derived.
+            // In flatten loop: items.push({ ...item, categoryName: cat.name, CategoryId: cat.id }); -> Yes, I added it.
+            document.getElementById('itemFeatured').checked = item.is_featured;
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('itemId').value;
+            const data = {
+                name_en: document.getElementById('itemNameEn').value,
+                name_ar: document.getElementById('itemNameAr').value,
+                price: document.getElementById('itemPrice').value,
+                CategoryId: document.getElementById('itemCategory').value,
+                is_featured: document.getElementById('itemFeatured').checked
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/items/${id}` : '/api/items';
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            closeModals();
+            loadData();
+        });
+
+        async function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                await fetch(`/api/items/${id}`, { method: 'DELETE' });
+                loadData();
+            }
+        }
+
+        function closeModals() {
+            document.getElementById('categoryModal').style.display = 'none';
+            document.getElementById('itemModal').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
